@@ -471,68 +471,19 @@ with col_right:
         </div>
     """), unsafe_allow_html=True)
 
-import streamlit as st
 
 # ==========================================================
-# 📖 TERMINAL METHODOLOGY GLOSSARY - PREMIUM FINTECH EDITION
+# 📖 TERMINAL METHODOLOGY GLOSSARY
 # ==========================================================
-platform_glossary_html = """
-<style>
-.smr-glossary { background-color: #0B0F19 !important; border: 1px solid #1E293B !important; border-radius: 8px !important; padding: 24px !important; font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important; margin-top: 30px !important; }
-.smr-header-text { color: #94A3B8 !important; font-size: 12px !important; font-weight: 700 !important; letter-spacing: 1.5px !important; text-transform: uppercase !important; }
-.smr-card { background-color: #111827 !important; border: 1px solid #1F2937 !important; border-radius: 6px !important; padding: 18px !important; display: flex !important; flex-direction: column !important; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3) !important; }
-.smr-card-title { color: #F8FAFC !important; font-size: 14px !important; font-weight: 600 !important; margin: 0 !important; }
-.smr-card-body { color: #94A3B8 !important; font-size: 13px !important; line-height: 1.5 !important; margin-top: 12px !important; }
-.smr-badge { background-color: rgba(56, 189, 248, 0.1) !important; color: #38BDF8 !important; font-size: 10px !important; font-weight: 700 !important; padding: 4px 8px !important; border-radius: 4px !important; border: 1px solid rgba(56, 189, 248, 0.25) !important; }
-.smr-pulse-dot { width: 8px; height: 8px; background-color: #38BDF8; border-radius: 50%; box-shadow: 0 0 8px #38BDF8; }
-</style>
-
-<div class="smr-glossary">
-<div style="display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #1E293B; padding-bottom: 16px; margin-bottom: 24px;">
-<div class="smr-pulse-dot"></div>
-<span class="smr-header-text">Smart Money Radar Terminal Glossary</span>
-</div>
-
-<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
-<div class="smr-card">
-<div style="display: flex; align-items: center; justify-content: space-between;">
-<span class="smr-card-title">Whale Classification</span>
-<span class="smr-badge">≥ $50k Out-of-Pocket</span>
-</div>
-<div class="smr-card-body">
-Operational filter isolating high-conviction, open-market insider purchases. Strips out programmatic equity grants, options exercises, and executive compensation packages to track pure, personal capital deployment.
-</div>
-</div>
-
-<div class="smr-card">
-<div style="display: flex; align-items: center; justify-content: space-between;">
-<span class="smr-card-title">Relative Impact Score</span>
-</div>
-<div class="smr-card-body">
-Measures trade size relative to the asset's daily liquidity profiles and market capitalization, ensuring small-cap clusters aren't drowned out by large-cap nominal values.
-</div>
-</div>
-
-<div class="smr-card">
-<div style="display: flex; align-items: center; justify-content: space-between;">
-<span class="smr-card-title">Cluster Signals</span>
-</div>
-<div class="smr-card-body">
-Triggered when multiple executives or directors deploy capital into their own stock within a tight timeframe, indicating broad internal consensus on execution visibility.
-</div>
-</div>
-
-<div class="smr-card">
-<div style="display: flex; align-items: center; justify-content: space-between;">
-<span class="smr-card-title">Execution Premium / Discount</span>
-</div>
-<div class="smr-card-body">
-Calculates the delta between the insider's filed SEC execution price and the current real-time market trading price to highlight immediate entry advantages.
-</div>
-</div>
-</div>
-</div>
-"""
-
-# Render the Glossary component to layout view
-st.markdown(platform_glossary_html, unsafe_allow_html=True)
+st.markdown("---")
+st.markdown(textwrap.dedent("""
+    <div style="padding: 0 max(4vw, 20px); margin-bottom: 2rem;">
+        <h4 style="font-weight:700; margin-bottom:12px;">📖 System Metrics Glossary</h4>
+        <p style="font-size:0.88rem; line-height:1.6; color:#475569;">
+            <strong>Relative Impact Level:</strong> Computed logarithmically against the security's 30-day median trading volume and dollar liquidity structure. An open-market purchase of $1M carries vastly alternative tracking priority inside a mid-cap security versus a mega-cap asset.
+        </p>
+        <div class="legal-disclaimer-footer">
+            <strong>Disclaimer:</strong> Smart Money Radar provides automated raw data ingestion and data visualizations compiled entirely from public SEC algorithmic filings. None of the components structured within this beta terminal serve as customized legal, financial, or personalized investment advisory positions. Past historical insider execution matrices provide no direct absolute future performance certainties.
+        </div>
+    </div>
+"""), unsafe_allow_html=True)

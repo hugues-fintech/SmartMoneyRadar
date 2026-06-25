@@ -118,8 +118,8 @@ st.markdown(textwrap.dedent("""
     .pill-blue { background-color: rgba(41,98,255,0.1); color:#1e40af !important; padding:3px 8px; border-radius:4px; font-size:0.75rem; font-weight:700; border:1px solid rgba(41,98,255,0.15); }
     .pill-orange { background-color: rgba(249,115,22,0.1); color:#c2410c !important; padding:3px 8px; border-radius:4px; font-size:0.75rem; font-weight:700; border:1px solid rgba(249,115,22,0.15); }
     .pill-purple { background-color: rgba(147,51,234,0.1); color:#6b21a8 !important; padding:3px 8px; border-radius:4px; font-size:0.75rem; font-weight:700; border:1px solid rgba(147,51,234,0.15); }
-    .live-pill-discount { background: rgba(249,115,22,0.1); color:#c2410c !important; padding:6px 12px; border-radius:4px; font-weight:600; font-size:0.8rem; border:1px dashed rgba(249,115,22,0.3); flex: 1; text-align: center; }
-    .live-pill-standard { background:#f1f5f9; color:#475569 !important; padding:6px 12px; border-radius:4px; font-weight:600; font-size:0.8rem; border:1px solid #e2e8f0; flex: 1; text-align: center; }
+    .live-pill-discount { background: rgba(249,115,22,0.1); color:#c2410c !important; padding:6px 12px; border-radius:4px; font-weight:600; font-size:0.8rem; border:1px dashed rgba(249,115,22,0.3); }
+    .live-pill-standard { background:#f1f5f9; color:#475569 !important; padding:6px 12px; border-radius:4px; font-weight:600; font-size:0.8rem; border:1px solid #e2e8f0; }
     .phone-housing { position:sticky; top:80px; background:#fff; border-radius:36px; padding:12px; border:2px solid #cbd5e1; max-width:360px; margin:0 auto 2rem auto; box-shadow:0 20px 25px -5px rgba(0,0,0,0.05); }
     .phone-screen { background:#0f172a; border-radius:26px; overflow:hidden; border:1px solid #1e293b; min-height:520px; display:flex; flex-direction:column; justify-content:space-between; }
     .phone-header { background:#1e293b; padding:20px 14px 14px 14px; color:#fff; text-align:center; border-bottom:1px solid #334155; }
@@ -278,56 +278,53 @@ with col_left:
             else:
                 badge_style = '<span class="pill-green">⚡ STANDARD ACTIVE PURCHASING</span>'
 
-            # --- DUAL TIME-FRAME WORKFLOW ENGINE (YFINANCE) ---
-            wire_perf_html = '<div class="live-pill-standard">Filing price status unavailable</div>'
-            trade_perf_html = '<div class="live-pill-standard">Insider entry delta unavailable</div>'
-            
+            # Dynamic real-time market data matching logic
+            price_context_html = f'<div class="live-pill-standard">Insider Paid: ${insider_buy_price:,.2f}</div>' if insider_buy_price else '<div class="live-pill-standard">Price data unavailable</div>'
             try:
                 filing_date_raw = row.get('Filing Date', None)
-                stock_engine = yf.Ticker(ticker_symbol)
-                
+                filing_date = None
                 if filing_date_raw:
-                    filing_date = pd.to_datetime(filing_date_raw).date()
-                    start_date = filing_date - timedelta(days=5)
+                    try:
+                        filing_date = pd.to_datetime(filing_date_raw).date()
+                    except Exception:
+                        filing_date = None
+
+                stock_engine = yf.Ticker(ticker_symbol)
+
+                if filing_date:
+                    start_date = filing_date - timedelta(days=3)
                     end_date = datetime.today().date() + timedelta(days=1)
                     history_slice = stock_engine.history(start=start_date, end=end_date)
                 else:
-                    history_slice = stock_engine.history(period="1mo")
+                    history_slice = stock_engine.history(period="6mo")
 
                 if not history_slice.empty:
                     history_slice = history_slice.sort_index()
-                    current_market_price = float(history_slice['Close'].iloc[-1])
-                    
-                    # A. Calculation since Wire Alert (Filing Date)
-                    entry_wire_price = None
-                    if filing_date_raw:
+                    entry_price = None
+                    if filing_date:
                         try:
-                            wire_rows = history_slice.loc[history_slice.index.date >= filing_date]
-                            if not wire_rows.empty:
-                                entry_wire_price = float(wire_rows['Close'].iloc[0])
+                            entry_rows = history_slice.loc[history_slice.index.date >= filing_date]
+                            if not entry_rows.empty:
+                                entry_price = float(entry_rows['Close'].iloc[0])
                         except Exception:
-                            entry_wire_price = None
-                    
-                    if entry_wire_price is None:
-                        entry_wire_price = float(history_slice['Close'].iloc[0])
-                        
-                    wire_perf_pct = ((current_market_price - entry_wire_price) / entry_wire_price) * 100
-                    if wire_perf_pct >= 0:
-                        wire_perf_html = f'<div class="live-pill-standard" style="color:#166534 !important; background:rgba(34, 197, 94, 0.06); border-color:rgba(34, 197, 94, 0.15);">📈 Wire Alert: +{wire_perf_pct:.1f}%</div>'
-                    else:
-                        wire_perf_html = f'<div class="live-pill-discount">📉 Wire Alert: {wire_perf_pct:.1f}%</div>'
+                            entry_price = None
 
-                    # B. Calculation since True Trade Execution Date (vs. Insider Cost Basis)
-                    if insider_buy_price and insider_buy_price > 0:
-                        trade_perf_pct = ((current_market_price - float(insider_buy_price)) / float(insider_buy_price)) * 100
-                        if trade_perf_pct >= 0:
-                            trade_perf_html = f'<div class="live-pill-standard" style="color:#166534 !important; background:rgba(34, 197, 94, 0.06); border-color:rgba(34, 197, 94, 0.15);">🏷️ Market Premium: +{trade_perf_pct:.1f}%</div>'
+                    if entry_price is None:
+                        entry_price = float(history_slice['Close'].iloc[0])
+
+                    current_market_price = float(history_slice['Close'].iloc[-1])
+
+                    if entry_price and entry_price > 0:
+                        perf_pct = ((current_market_price - entry_price) / entry_price) * 100
+                        if perf_pct >= 0:
+                            price_context_html = f'<div class="live-pill-standard" style="color:#166534 !important; background:rgba(34, 197, 94, 0.06); border-color:rgba(34, 197, 94, 0.15);">📈 Up +{perf_pct:.1f}% since wire alert</div>'
                         else:
-                            # Negative indicates stock dropped below insider buy price -> buying at a discount!
-                            trade_perf_html = f'<div class="live-pill-discount" style="background: rgba(34, 197, 94, 0.1); color: #166534 !important; border-color: rgba(34, 197, 94, 0.3);">🎁 Market Discount: {abs(trade_perf_pct):.1f}%</div>'
+                            price_context_html = f'<div class="live-pill-discount">📉 Down {abs(perf_pct):.1f}% since wire alert</div>'
             except Exception:
                 pass
 
+            # CRITICAL COMPACT FIX: Completely removed all structural code indentation and dedent calls here 
+            # to block markdown parsers from mistaking HTML formatting space rules for custom raw code text block flags.
             card_html = (
 f'<div class="signal-card">'
 f'<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">'
@@ -344,7 +341,7 @@ f'<div style="color: #334155; font-size: 0.9rem; line-height: 1.4; margin-bottom
 f'<strong style="color: #64748b;">Company:</strong> {row.get("Company", "N/A")} (Size: {mcap_display} | Avg Vol: {vol_display})<br>'
 f'<strong style="color: #64748b;">Purchaser:</strong> {row.get("Insider", "N/A")} (<span style="color:#475569;">{pos_label}</span>)'
 f'</div>'
-f'<div style="margin-bottom: 12px; display: flex; gap: 10px; width: 100%;">{wire_perf_html}{trade_perf_html}</div>'
+f'<div style="margin-bottom: 12px; display: flex; gap: 8px;">{price_context_html}</div>'
 f'<div style="background: #f1f5f9; padding: 10px 14px; border-radius: 4px; font-size: 0.85rem; color: #334155; border-left: 3px solid #2962ff; line-height:1.4;">'
 f'💡 <strong>Relative Impact Matrix:</strong> Deployed sum carries unique structural value based on core company liquidity profiles. Out-of-pocket setup confirms deep insider conviction.'
 f'</div>'
@@ -471,68 +468,19 @@ with col_right:
         </div>
     """), unsafe_allow_html=True)
 
-import streamlit as st
 
 # ==========================================================
-# 📖 TERMINAL METHODOLOGY GLOSSARY - PREMIUM FINTECH EDITION
+# 📖 TERMINAL METHODOLOGY GLOSSARY
 # ==========================================================
-platform_glossary_html = """
-<style>
-.smr-glossary { background-color: #0B0F19 !important; border: 1px solid #1E293B !important; border-radius: 8px !important; padding: 24px !important; font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important; margin-top: 30px !important; }
-.smr-header-text { color: #94A3B8 !important; font-size: 12px !important; font-weight: 700 !important; letter-spacing: 1.5px !important; text-transform: uppercase !important; }
-.smr-card { background-color: #111827 !important; border: 1px solid #1F2937 !important; border-radius: 6px !important; padding: 18px !important; display: flex !important; flex-direction: column !important; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3) !important; }
-.smr-card-title { color: #F8FAFC !important; font-size: 14px !important; font-weight: 600 !important; margin: 0 !important; }
-.smr-card-body { color: #94A3B8 !important; font-size: 13px !important; line-height: 1.5 !important; margin-top: 12px !important; }
-.smr-badge { background-color: rgba(56, 189, 248, 0.1) !important; color: #38BDF8 !important; font-size: 10px !important; font-weight: 700 !important; padding: 4px 8px !important; border-radius: 4px !important; border: 1px solid rgba(56, 189, 248, 0.25) !important; }
-.smr-pulse-dot { width: 8px; height: 8px; background-color: #38BDF8; border-radius: 50%; box-shadow: 0 0 8px #38BDF8; }
-</style>
-
-<div class="smr-glossary">
-<div style="display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #1E293B; padding-bottom: 16px; margin-bottom: 24px;">
-<div class="smr-pulse-dot"></div>
-<span class="smr-header-text">Smart Money Radar Terminal Glossary</span>
-</div>
-
-<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
-<div class="smr-card">
-<div style="display: flex; align-items: center; justify-content: space-between;">
-<span class="smr-card-title">Whale Classification</span>
-<span class="smr-badge">≥ $50k Out-of-Pocket</span>
-</div>
-<div class="smr-card-body">
-Operational filter isolating high-conviction, open-market insider purchases. Strips out programmatic equity grants, options exercises, and executive compensation packages to track pure, personal capital deployment.
-</div>
-</div>
-
-<div class="smr-card">
-<div style="display: flex; align-items: center; justify-content: space-between;">
-<span class="smr-card-title">Relative Impact Score</span>
-</div>
-<div class="smr-card-body">
-Measures trade size relative to the asset's daily liquidity profiles and market capitalization, ensuring small-cap clusters aren't drowned out by large-cap nominal values.
-</div>
-</div>
-
-<div class="smr-card">
-<div style="display: flex; align-items: center; justify-content: space-between;">
-<span class="smr-card-title">Cluster Signals</span>
-</div>
-<div class="smr-card-body">
-Triggered when multiple executives or directors deploy capital into their own stock within a tight timeframe, indicating broad internal consensus on execution visibility.
-</div>
-</div>
-
-<div class="smr-card">
-<div style="display: flex; align-items: center; justify-content: space-between;">
-<span class="smr-card-title">Execution Premium / Discount</span>
-</div>
-<div class="smr-card-body">
-Calculates the delta between the insider's filed SEC execution price and the current real-time market trading price to highlight immediate entry advantages.
-</div>
-</div>
-</div>
-</div>
-"""
-
-# Render the Glossary component to layout view
-st.markdown(platform_glossary_html, unsafe_allow_html=True)
+st.markdown("---")
+st.markdown(textwrap.dedent("""
+    <div style="padding: 0 max(4vw, 20px); margin-bottom: 2rem;">
+        <h4 style="font-weight:700; margin-bottom:12px;">📖 System Metrics Glossary</h4>
+        <p style="font-size:0.88rem; line-height:1.6; color:#475569;">
+            <strong>Relative Impact Level:</strong> Computed logarithmically against the security's 30-day median trading volume and dollar liquidity structure. An open-market purchase of $1M carries vastly alternative tracking priority inside a mid-cap security versus a mega-cap asset.
+        </p>
+        <div class="legal-disclaimer-footer">
+            <strong>Disclaimer:</strong> Smart Money Radar provides automated raw data ingestion and data visualizations compiled entirely from public SEC algorithmic filings. None of the components structured within this beta terminal serve as customized legal, financial, or personalized investment advisory positions. Past historical insider execution matrices provide no direct absolute future performance certainties.
+        </div>
+    </div>
+"""), unsafe_allow_html=True)
