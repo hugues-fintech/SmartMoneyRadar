@@ -17,7 +17,7 @@ set_identity("Smart Money Radar admin@smartmoneyradar.com")
 # Les clés sont maintenant appelées depuis l'environnement du système (invisibles dans le code)
 TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
 TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID")
-DASHBOARD_URL = "https://smart-money-radar.streamlit.app" # Ton future lien public
+DASHBOARD_URL = "https://smart-money-radar.streamlit.app" # Ton lien public
 
 def send_telegram_alert(ticker, trigger_type, score, insider, position, value, z_score):
     """Envoie l'alerte sur Telegram de manière sécurisée."""
@@ -25,7 +25,7 @@ def send_telegram_alert(ticker, trigger_type, score, insider, position, value, z
         print("    [!] Telegram tokens missing in environment. Alert not sent.")
         return
 
-    # 🌟 AJOUTE CETTE LIGNE ICI POUR NETTOYER LES DÉCIMALES :
+    # Nettoyage des décimales pour le score de conviction
     clean_score = round(float(score), 1)
 
     emoji = "🔥" if "ALIGNMENT" in trigger_type else ("🐋" if "WHALE" in trigger_type else "🏛️")
@@ -36,7 +36,7 @@ def send_telegram_alert(ticker, trigger_type, score, insider, position, value, z
         f"👤 **Insider:** {insider} ({position})\n"
         f"💰 **Transaction Value:** ${value:,.2f}\n"
         f"📊 **Log-Normal Deviation:** {z_score:+.2f}σ\n"
-        f"🎯 **Conviction Score:** {clean_score}/100\n\n"  # 🌟 MODIFIE CETTE LIGNE EN REMPLAÇANT score PAR clean_score
+        f"🎯 **Conviction Score:** {clean_score}/100\n\n"
         f"🔗 [View Full Intelligence Dashboard]({DASHBOARD_URL})"
     )
     
@@ -144,7 +144,7 @@ except Exception as e:
     exit()
 
 for index, filing in enumerate(recent_filings):
-    print(f"   ⏳ Parsing filing [{index+1}/{len(recent_filings)}]...", end="\r")
+    print(f"    ⏳ Parsing filing [{index+1}/{len(recent_filings)}]...", end="\r")
     try:
         form4_data = filing.obj()
         if form4_data is None: 
@@ -157,8 +157,9 @@ for index, filing in enumerate(recent_filings):
             if ticker_cols:
                 ticker = str(df_raw[ticker_cols[0]].iloc[0]).upper()
         
+        # FIX 1: Alignement corrigé pour le bloc de validation du ticker
         if not ticker or ticker in ["UNKNOWN", "NONE", "NULL", "N/A"]:
-    continue
+            continue
             
         df_buys = df_raw[(df_raw['Transaction Type'].str.lower() == 'purchase') | (df_raw['Code'].str.upper() == 'P')].copy()
         
@@ -189,9 +190,9 @@ if all_purchases:
     
     market_context_cache = {}
     for t_idx, t in enumerate(unique_tickers):
-        print(f"   📊 API Lookup [{t_idx+1}/{len(unique_tickers)}]: {t}...", end="\r")
+        print(f"    📊 API Lookup [{t_idx+1}/{len(unique_tickers)}]: {t}...", end="\r")
         market_context_cache[t] = fetch_ticker_market_context(t)
-        time.sleep(1.5) # PAUSE DE SÉCURITÉ: Prévient le bannissement de ton IP par Yahoo Finance
+        time.sleep(1.5) # PAUSE DE SÉCURITÉ: Prévient le bannissement par Yahoo Finance
     
     print("\n💾 Processing database injections and calculations...")
     new_records_saved = 0
@@ -218,8 +219,9 @@ if all_purchases:
         if calculated_z >= 2.0:
             intensity_score = min(80.0 + (calculated_z - 2.0) * 5.0, 100.0)
             trigger_type = "🔥 CLUSTER + WHALE ALIGNMENT" if cluster_count >= 2 else "🐋 HIGH-INTENSITY WHALE"
-       elif cluster_count >= 2:
-    intensity_score = round(50.0 + min(float(cluster_count) * 10.0, 30.0), 1)
+        # FIX 2: Alignement corrigé pour les variables sous le bloc cluster_count >= 2
+        elif cluster_count >= 2:
+            intensity_score = round(50.0 + min(float(cluster_count) * 10.0, 30.0), 1)
             trigger_type = "🏛️ MULTI-INSIDER CLUSTER"
         else:
             intensity_score = max(5.0, round(25.0 + (calculated_z * 10.0), 2))
@@ -227,7 +229,7 @@ if all_purchases:
 
         mcap_value = int(mcap) if mcap else None
         
-        # We only want to alert if it's a completely NEW record in the DB
+        # On vérifie si l'enregistrement est complètement NOUVEAU
         cursor.execute("SELECT filing_id FROM insider_trades WHERE filing_id = ?", (row['filing_id'],))
         is_new = cursor.fetchone() is None
 
@@ -242,7 +244,6 @@ if all_purchases:
             new_records_saved += 1
             if trigger_type != "NOISE":
                 print(f"🎯 ALPHACATCH | {ticker_symbol} | Z-Score: {calculated_z:+.2f}σ | Level: {trigger_type}")
-                # Alerte déclenchée immédiatement à l'isolation de l'anomalie
                 send_telegram_alert(
                     ticker=ticker_symbol,
                     trigger_type=trigger_type,
