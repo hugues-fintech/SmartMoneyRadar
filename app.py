@@ -143,8 +143,7 @@ def normalize_intensity(raw_score) -> tuple:
 def estimate_salary_ratio(total_value, position):
     """Calculates behavioral storytelling metric: how many years of salary does this trade represent?"""
     pos_upper = str(position).upper()
-    # Average estimated base net salaries for executives
-    base_salary = 400000 # Default
+    base_salary = 400000 
     if "CEO" in pos_upper or "CHIEF EXECUTIVE" in pos_upper:
         base_salary = 800000
     elif "CFO" in pos_upper or "CHIEF FINANCIAL" in pos_upper:
@@ -206,13 +205,12 @@ def run_database_setup_and_migrations(db_path):
 run_database_setup_and_migrations(DB_PATH)
 
 # ==========================================================
-# 🎨 BRAND NEW FINTECH DARK DESIGN SYSTEM (ZOPA & TRADING 212 STYLE)
+# 🎨 BRAND NEW FINTECH DARK DESIGN SYSTEM
 # ==========================================================
 st.markdown(textwrap.dedent("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap');
     
-    /* Reset & Dark Mode Core */
     html { scroll-behavior: smooth; }
     html, body, [data-testid="stAppViewContainer"], .main { 
         background-color: #090d16 !important;
@@ -222,7 +220,6 @@ st.markdown(textwrap.dedent("""
     div.block-container { padding: 5rem max(3vw, 20px) !important; max-width: 1400px; }
     [data-testid="stHeader"], footer { visibility: hidden !important; }
     
-    /* Typography */
     h1, h2, h3, h4, h5, h6 { 
         color: #ffffff !important; 
         font-family: 'Space Grotesk', sans-serif !important;
@@ -231,7 +228,6 @@ st.markdown(textwrap.dedent("""
     }
     label, p, span { color: #94a3b8 !important; }
     
-    /* Top Accent Line */
     [data-testid="stAppViewContainer"]::before {
         content: "";
         position: fixed;
@@ -243,7 +239,6 @@ st.markdown(textwrap.dedent("""
         z-index: 999999;
     }
     
-    /* Premium Floating Navbar */
     .premium-navbar { 
         position: fixed; 
         top: 4px; 
@@ -291,7 +286,6 @@ st.markdown(textwrap.dedent("""
         transform: translateY(-1px);
     }
 
-    /* Ticker Stream (Clean Dark Style) */
     .ticker-wrap { 
         width: 100%; 
         overflow: hidden; 
@@ -307,7 +301,6 @@ st.markdown(textwrap.dedent("""
     .ticker-item span.up { color: #10b981 !important; }
     @keyframes marquee { 0% { transform: translate3d(0,0,0); } 100% { transform: translate3d(-100%,0,0); } }
 
-    /* Hero Glassmorphism Panel */
     .hero-panel { 
         padding: 44px 38px; 
         background: linear-gradient(135deg, rgba(17, 24, 39, 0.7) 0%, rgba(9, 13, 22, 0.9) 100%); 
@@ -345,7 +338,6 @@ st.markdown(textwrap.dedent("""
         max-width: 850px; 
     }
    
-    /* Stat / Trust Banner */
     .trust-banner { 
         display: flex; 
         justify-content: center; 
@@ -374,7 +366,6 @@ st.markdown(textwrap.dedent("""
     }
     .trust-divider { width: 1px; height: 35px; background: rgba(255, 255, 255, 0.08); }
 
-    /* Fintech Cards (Signal Wire) */
     .signal-card { 
         background: #111827; 
         padding: 26px; 
@@ -389,7 +380,6 @@ st.markdown(textwrap.dedent("""
         transform: translateY(-2px);
     }
     
-    /* Badges & Tags */
     .pill-purple { background: rgba(147, 51, 234, 0.12); color: #c084fc !important; padding: 4px 10px; border-radius: 6px; font-size: 0.72rem; font-weight: 700; border: 1px solid rgba(147, 51, 234, 0.25); }
     .pill-blue { background: rgba(59, 130, 246, 0.12); color: #60a5fa !important; padding: 4px 10px; border-radius: 6px; font-size: 0.72rem; font-weight: 700; border: 1px solid rgba(59, 130, 246, 0.25); }
     .pill-orange { background: rgba(249, 115, 22, 0.12); color: #ffedd5 !important; padding: 4px 10px; border-radius: 6px; font-size: 0.72rem; font-weight: 700; border: 1px solid rgba(249, 115, 22, 0.25); }
@@ -398,7 +388,6 @@ st.markdown(textwrap.dedent("""
     .live-pill-discount { background: rgba(249, 115, 22, 0.1); color: #f97316 !important; padding: 8px 12px; border-radius: 8px; font-weight: 700; font-size: 0.8rem; border: 1px solid rgba(249, 115, 22, 0.2); flex: 1; text-align: center; }
     .live-pill-standard { background: rgba(255, 255, 255, 0.03); color: #94a3b8 !important; padding: 8px 12px; border-radius: 8px; font-weight: 600; font-size: 0.8rem; border: 1px solid rgba(255, 255, 255, 0.05); flex: 1; text-align: center; }
 
-    /* Configuration & Layout Cards */
     .config-card { 
         background: #111827; 
         border: 1px solid rgba(255, 255, 255, 0.05); 
@@ -416,7 +405,6 @@ st.markdown(textwrap.dedent("""
     .bullet-item { font-size: 0.88rem; color: #94a3b8 !important; margin-bottom: 10px; display: flex; align-items: center; gap: 10px; }
     .bullet-dot { width: 6px; height: 6px; background: #2563eb; border-radius: 50%; }
     
-    /* Inputs & Form Overrides */
     div[data-testid="stTextInput"] input { 
         background-color: #090d16 !important; 
         color: #ffffff !important; 
@@ -446,7 +434,6 @@ st.markdown(textwrap.dedent("""
     }
     .sec-archive-timestamp { margin-top: 14px; color: #475569 !important; font-size: 0.78rem; font-family: 'JetBrains Mono', monospace; }
     
-    /* Gated Blurring Engine */
     .gated-blur-box { 
         background: rgba(255, 255, 255, 0.02); 
         border: 2px dashed rgba(255, 255, 255, 0.1); 
@@ -537,7 +524,7 @@ st.markdown(textwrap.dedent("""
 """), unsafe_allow_html=True)
 
 # ==========================================================
-# 📊 DATABASE RECOVERY & TELEMETRY
+# 📊 DATABASE RECOVERY & TELEMETRY (CLEAN ALIGNED BLOCK)
 # ==========================================================
 try:
     conn = sqlite3.connect(DB_PATH)
@@ -561,7 +548,7 @@ try:
     )
     live_scans_total = int(telemetry_df['metric_value'].iloc[0]) if not telemetry_df.empty else total_count
 
-   query = """
+    query = """
         SELECT 
             ticker as [Ticker], 
             company as [Company],                         
@@ -650,7 +637,6 @@ with col_left:
             else:
                 badge_style = '<span class="pill-orange">🐋 HIGH-INTENSITY WHALE</span>'
 
-            # Behavioral Storytelling Calculation
             multiplier = estimate_salary_ratio(tv, pos_label)
             story_html = f"""
             <div class="behavioral-story-badge">
@@ -697,7 +683,6 @@ with col_left:
                     f'</div>'
                 )
 
-            # Elegant Card Construction with Custom CSS Progress Bar & Storytelling Badge
             card_html = (
                 f'<div class="signal-card">'
                 f'  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">'
@@ -749,7 +734,6 @@ with col_right:
             import plotly.graph_objects as go
             import numpy as np
 
-            # ---------------- CHART 1: THE BELL CURVE ----------------
             st.markdown('<div class="config-card">', unsafe_allow_html=True)
             
             x_axis = np.linspace(-4, 4, 200)
@@ -775,7 +759,6 @@ with col_right:
             """, unsafe_allow_html=True)
             st.markdown('</div>', unsafe_allow_html=True)
 
-            # ---------------- CHART 2: SIGNAL VECTOR MAP ----------------
             st.markdown('<div class="config-card">', unsafe_allow_html=True)
             bubble_fig = go.Figure()
             
@@ -845,7 +828,7 @@ with col_right:
             st.info("Visual framework active. Awaiting pipeline stream coordinates.")
 
     # ==========================================================
-    # 📝 LEAD CAPTURE FORM (GATED REDIRECT)
+    # 📝 LEAD CAPTURE FORM
     # ==========================================================
     st.markdown(textwrap.dedent("""
         <div id="join-terminal-anchor" class="config-card">
@@ -890,7 +873,7 @@ with col_right:
                     st.error(f"Local storage compilation synchronization failed: {db_err}")
 
 # ==========================================================
-# 🔐 SECURE ADMIN CRM CONSOLE (MAIN PAGE BOTTOM)
+# 🔐 SECURE ADMIN CRM CONSOLE
 # ==========================================================
 st.markdown("---")
 with st.expander("🔐 Open Admin Console Link", expanded=False):
