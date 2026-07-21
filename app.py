@@ -561,25 +561,24 @@ try:
     )
     live_scans_total = int(telemetry_df['metric_value'].iloc[0]) if not telemetry_df.empty else total_count
 
-    query = """
+   query = """
         SELECT 
             ticker as [Ticker], 
-            MAX(company) as [Company],                         
-            GROUP_CONCAT(DISTINCT insider_name) as [Insider],   
-            GROUP_CONCAT(DISTINCT position) as [Position],     
-            ROUND(AVG(price), 2) as [Buy Price],
-            SUM(total_value) as [Total Value],
-            MAX(market_cap) as [Market Cap],                   
-            MAX(avg_volume) as [Avg Volume],                   
-            MAX(intensity_score) as [Intensity Score], 
-            MAX(trigger_type) as [Trigger Type],               
-            MAX(filing_date) as [Filing Date], 
-            MAX(z_score) as [Z-Score],
-            COUNT(DISTINCT insider_name) as [Unique Insiders]  
+            company as [Company],                         
+            insider_name as [Insider],   
+            position as [Position],     
+            ROUND(price, 2) as [Buy Price],
+            total_value as [Total Value],
+            market_cap as [Market Cap],                   
+            avg_volume as [Avg Volume],                   
+            intensity_score as [Intensity Score], 
+            trigger_type as [Trigger Type],               
+            filing_date as [Filing Date], 
+            z_score as [Z-Score],
+            1 as [Unique Insiders]  
         FROM insider_trades 
-        WHERE trigger_type != 'NOISE'
-        GROUP BY ticker
-        ORDER BY [Filing Date] DESC, [Total Value] DESC 
+        WHERE trigger_type IN ('CLUSTER', 'WHALE_ALIGNMENT', 'HIGH_INTENSITY')
+        ORDER BY filing_date DESC, total_value DESC 
         LIMIT 10
     """
     df_signals = pd.read_sql_query(query, conn)
