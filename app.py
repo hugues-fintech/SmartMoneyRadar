@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import math
 import streamlit as st
 import sqlite3
@@ -171,8 +172,7 @@ if "terminal_unlocked" not in st.session_state:
 # 🗺️ PATH RESOLUTION & DATABASE MIGRATIONS
 # ==========================================================
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
-PROJECT_ROOT = os.path.abspath(os.path.join(CURRENT_DIR, ".."))
-DB_PATH = os.path.join(PROJECT_ROOT, "02_Database", "insider_vault.db")
+DB_PATH = os.path.join(CURRENT_DIR, "02_Database", "insider_vault.db")
 
 def run_database_setup_and_migrations(db_path):
     try:
@@ -524,7 +524,7 @@ st.markdown(textwrap.dedent("""
 """), unsafe_allow_html=True)
 
 # ==========================================================
-# 📊 DATABASE RECOVERY & TELEMETRY (CLEAN ALIGNED BLOCK)
+# 📊 DATABASE RECOVERY & TELEMETRY
 # ==========================================================
 try:
     conn = sqlite3.connect(DB_PATH)
@@ -537,8 +537,9 @@ try:
     tv_raw = total_tracked_df['total_val'].iloc[0]
     total_val = float(tv_raw) if pd.notna(tv_raw) else 0.0
 
+    # MISE À JOUR : On ne compte que les anomalies positives massives (Z-Score >= 1.5)
     high_conviction_df = pd.read_sql_query(
-        "SELECT COUNT(*) as high_count FROM insider_trades WHERE trigger_type != 'NOISE'", conn
+        "SELECT COUNT(*) as high_count FROM insider_trades WHERE trigger_type != 'NOISE' AND z_score >= 1.5", conn
     )
     hc_raw = high_conviction_df['high_count'].iloc[0]
     high_conviction_count = int(hc_raw) if pd.notna(hc_raw) else 0
@@ -548,6 +549,7 @@ try:
     )
     live_scans_total = int(telemetry_df['metric_value'].iloc[0]) if not telemetry_df.empty else total_count
 
+    # LA REQUÊTE SQL MANQUANTE EST DE RETOUR ICI :
     query = """
         SELECT 
             ticker as [Ticker], 
@@ -564,10 +566,11 @@ try:
             z_score as [Z-Score],
             1 as [Unique Insiders]  
         FROM insider_trades 
-        WHERE trigger_type != 'NOISE'
+        WHERE trigger_type != 'NOISE' AND z_score >= 1.5
         ORDER BY filing_date DESC, total_value DESC 
         LIMIT 10
     """
+    
     df_signals = pd.read_sql_query(query, conn)
     conn.close()
 except Exception:
