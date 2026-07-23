@@ -136,7 +136,7 @@ print(" 🚀 ENGINE ACTIVE: FETCHING SEC EDGAR STREAMS")
 print("==========================================================")
 try:
     filing_buffer = get_filings(form="4")
-    recent_filings = filing_buffer.latest(100)
+    recent_filings = filing_buffer.latest(5000)
     all_purchases = []
     print(f"[*] Extracting metrics from {len(recent_filings)} forms...")
 except Exception as e:
