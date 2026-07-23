@@ -564,7 +564,7 @@ try:
             z_score as [Z-Score],
             1 as [Unique Insiders]  
         FROM insider_trades 
-        WHERE trigger_type IN ('CLUSTER', 'WHALE_ALIGNMENT', 'HIGH_INTENSITY')
+        WHERE trigger_type != 'NOISE'
         ORDER BY filing_date DESC, total_value DESC 
         LIMIT 10
     """
